@@ -7,6 +7,7 @@ import { Marketplace } from "./screens/Marketplace";
 import { Chatbot } from "./screens/Chatbot/Chatbot";
 import { Chatbot_post } from "./screens/Chatbot/Chatbot_post";
 import { Chatbot_video } from "./screens/Chatbot/Chatbot_video";
+import { Layout as ChatbotLayout } from "./screens/ChatbotOnboarding/Layout";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -19,6 +20,7 @@ const App = () => (
       <Route path="/chatbot" element={<Chatbot />} />
       <Route path="/chatbotpost" element={<Chatbot_post />} />
       <Route path="/chatbotvideo" element={<Chatbot_video />} />
+      <Route path="/chatbotonboarding" element={<ChatbotLayout />} />
     </Route>
   </Routes>
 );

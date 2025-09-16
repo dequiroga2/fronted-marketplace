@@ -94,7 +94,7 @@ export const Chatbot = (): JSX.Element => {
   }, [messages]);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col items-center p-8 relative font-sans">
+    <div className="h-screen bg-gray-50 text-gray-900 flex flex-col items-center px-8 py-6 relative font-sans">
       {/* Toggle button for chatbot list */}
       <div className="w-full max-w-4xl mb-4 flex justify-start">
         <button
@@ -161,7 +161,7 @@ export const Chatbot = (): JSX.Element => {
       )}
 
       {/* Main chat area */}
-      <div className="flex w-full max-w-6xl h-[calc(100vh-4rem)]">
+      <div className="flex w-full max-w-6xl flex-1 min-h-0">
 
         {/* PANEL IZQUIERDO */}
         <div className="w-64 bg-white rounded-lg shadow-md p-4 mr-4">
@@ -187,7 +187,7 @@ export const Chatbot = (): JSX.Element => {
         </div>
 
         {/* PANEL DERECHO */}
-        <div className="flex-1 bg-gray-50 rounded-lg shadow-md p-8 flex flex-col justify-between max-w-4xl w-full h-[calc(100vh-4rem)]">
+        <div className="flex-1 bg-gray-50 rounded-lg shadow-md p-8 flex flex-col w-full min-h-0 max-h-full">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center flex-1">
               <p className="text-2xl font-light mb-6 text-center max-w-md">
@@ -219,7 +219,7 @@ export const Chatbot = (): JSX.Element => {
           ) : (
             <div className="flex flex-col flex-1">
               <div id="message-container"
-                className="flex-1 overflow-y-auto flex flex-col space-y-2 p-4 bg-white rounded shadow-inner">
+                className="flex-1 overflow-y-auto flex flex-col space-y-2 p-4 bg-white rounded shadow-inner min-h-0">
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
@@ -250,7 +250,7 @@ export const Chatbot = (): JSX.Element => {
                 )}
 
               </div>
-              <div className="flex w-full space-x-4">
+              <div className="flex w-full space-x-4 mt-4">
                 <input
                   type="text"
                   placeholder="Ask anything"
