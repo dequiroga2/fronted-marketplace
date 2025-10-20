@@ -8,7 +8,11 @@ export const LogoSection: React.FC = () => {
         {/* Logo Principal - Más pequeño */}
         <div className="mb-4 relative">
           <div className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/25 mb-4">
-            <Sparkles size={28} className="text-white" />
+            <img 
+                    src="/public/logo_mph.jpg" // Cambia esta ruta si tu logo está en otro lugar (ej. /images/logo.jpg)
+                    alt="Logo de la marca" 
+                    className="w-full h-full object-cover rounded-2xl" // Asegura que el logo se ajuste y cubra el contenedor
+                />
           </div>
           
           {/* Elementos decorativos flotantes - Más pequeños */}
@@ -27,8 +31,6 @@ export const LogoSection: React.FC = () => {
         </h1>
         
         <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-          Estoy aquí para ayudarte a conocer todos nuestros servicios, precios y características. 
-          ¡Pregúntame cualquier cosa!
         </p>
 
         {/* Cards de características - Más compactas */}
