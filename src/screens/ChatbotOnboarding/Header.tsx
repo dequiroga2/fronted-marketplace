@@ -60,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
               <img 
-                    src="/public/logo_mph.jpg" // Cambia esta ruta si tu logo está en otro lugar (ej. /images/logo.jpg)
+                    src="/logo_mph.jpg" // Cambia esta ruta si tu logo está en otro lugar (ej. /images/logo.jpg)
                     alt="Logo de la marca" 
                     className="w-full h-full object-cover rounded-lg" // Asegura que el logo se ajuste y cubra el contenedor
                 />

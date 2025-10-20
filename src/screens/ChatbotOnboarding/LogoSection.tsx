@@ -9,7 +9,7 @@ export const LogoSection: React.FC = () => {
         <div className="mb-4 relative">
           <div className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/25 mb-4">
             <img 
-                    src="/public/logo_mph.jpg" // Cambia esta ruta si tu logo está en otro lugar (ej. /images/logo.jpg)
+                    src="/logo_mph.jpg" // Cambia esta ruta si tu logo está en otro lugar (ej. /images/logo.jpg)
                     alt="Logo de la marca" 
                     className="w-full h-full object-cover rounded-2xl" // Asegura que el logo se ajuste y cubra el contenedor
                 />
