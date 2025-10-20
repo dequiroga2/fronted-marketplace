@@ -48,7 +48,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             {/* 1. Capa de Fondo (atrás) */}
             <div 
                 className="absolute inset-0 bg-center bg-cover bg-no-repeat z-0"
-                style={{ backgroundImage: `url('/public/onboarding.jpg')` }}
+                style={{ backgroundImage: `url('/onboarding.jpg')` }}
             >
                 {/* 👇 AQUÍ ESTÁ EL CAMBIO. Usamos clases de color y opacidad separadas. */}
                 <div className="absolute inset-0 bg-white dark:bg-gray-900 opacity-50 dark:opacity-80"></div>
