@@ -9,7 +9,7 @@ import { ChatArea } from './ChatArea';
 import { Header } from './Header';
 import { Message, ChatSession, User } from '../../types';
 
-const N8N_WEBHOOK_URL = "https://automation.luminotest.com/webhook/5c1af535-f331-4966-91fd-0ba082876f37";
+const N8N_WEBHOOK_URL = "https://automation.luminotest.com/webhook/485898e8-4536-4a8b-b709-4956378d5e33";
 
 export const Layout: React.FC = () => {
     const { user } = useAuth();
