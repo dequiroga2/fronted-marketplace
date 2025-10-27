@@ -78,7 +78,7 @@ const defaultBot: BotDef = bots[0];
  * Hooks (unified)
  */
 
-const N8N_WEBHOOK_URL = "https://automation.luminotest.com/webhook/5c1af535-f331-4966-91fd-0ba082876f37";
+const N8N_WEBHOOK_URL = "https://automation.luminotest.com/webhook/485898e8-4536-4a8b-b709-4956378d5e33"; //FASE 2
 const useChat = (selectedBotId: string) => {
   const [chats, setChats] = useState<ChatThread[]>([
     {
