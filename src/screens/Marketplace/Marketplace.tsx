@@ -59,6 +59,49 @@ export const Marketplace = (): JSX.Element => {
       category: "Creatividad",
       featured: true,
       gradient: "from-blue-500 to-purple-600",
+      route: "/chatbotonboarding",
+    },
+    {
+      id: 2,
+      name: "Fase 1",
+      description:
+        "Chatbot especializado en la primera fase de desarrollo. Ideal para iniciar proyectos y establecer bases sólidas con estrategias efectivas.",
+      price: "$39",
+      period: "/mes",
+      rating: 4.7,
+      users: "8.3k",
+      category: "Desarrollo",
+      featured: false,
+      gradient: "from-green-500 to-teal-600",
+      route: "/fase1",
+    },
+    {
+      id: 3,
+      name: "Fase 2",
+      description:
+        "Assistant avanzado para la segunda fase de implementación. Optimiza procesos y mejora la eficiencia de tus proyectos en curso.",
+      price: "$49",
+      period: "/mes",
+      rating: 4.8,
+      users: "10.1k",
+      category: "Optimización",
+      featured: false,
+      gradient: "from-orange-500 to-red-600",
+      route: "/fase2",
+    },
+    {
+      id: 4,
+      name: "Fase 3",
+      description:
+        "Chatbot experto en la fase final de consolidación. Perfecto para escalar y maximizar resultados con análisis profundos y estrategias avanzadas.",
+      price: "$59",
+      period: "/mes",
+      rating: 4.9,
+      users: "15.2k",
+      category: "Escalamiento",
+      featured: false,
+      gradient: "from-purple-500 to-pink-600",
+      route: "/fase3",
     },
   ];
 
@@ -66,8 +109,8 @@ export const Marketplace = (): JSX.Element => {
     document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSubscribe = () => {
-    navigate("/chatbotonboarding");
+  const handleSubscribe = (route: string) => {
+    navigate(route);
   };
 
   const handleLogout = async () => {
@@ -313,7 +356,7 @@ export const Marketplace = (): JSX.Element => {
                       <span className="text-gray-400 text-sm">{chat.period}</span>
                     </div>
                     <button
-                      onClick={handleSubscribe}
+                      onClick={() => handleSubscribe(chat.route)}
                       className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 group"
                     >
                       <span>Suscribirse</span>

@@ -1,21 +1,23 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+/*  */import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../../firebase-config';
 import { collection, doc, getDocs, setDoc, orderBy, query, serverTimestamp, Timestamp } from "firebase/firestore"; 
 import { useAuth } from '../../contexts/AuthContext';
-import { Sidebar } from './Sidebar';
-import { ChatArea } from './ChatArea';
-import { Header } from './Header';
+import { Sidebar } from '../ChatbotOnboarding/Sidebar';
+import { ChatAreaGeneric } from './ChatAreaGeneric';
+import { Header } from '../ChatbotOnboarding/Header';
 import { Message, ChatSession, User } from '../../types';
+import type { BotConfig } from './types';
 
-const N8N_WEBHOOK_URL = "https://automation.luminotest.com/webhook/5c1af535-f331-4966-91fd-0ba082876f37";
+interface LayoutGenericProps {
+    botConfig: BotConfig;
+}
 
-export const Layout: React.FC = () => {
+export const LayoutGeneric: React.FC<LayoutGenericProps> = ({ botConfig }) => {
     const { user } = useAuth();
     const navigate = useNavigate();
     
-    // Cambiado el tema predeterminado a 'light'
     const [theme, setTheme] = useState<'light' | 'dark'>('light');
     const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
@@ -32,6 +34,7 @@ export const Layout: React.FC = () => {
     }), [user]);
 
     // Carga las sesiones desde Firestore cuando el usuario se autentica
+    // Usa una colección específica para cada bot basada en botConfig.id
     useEffect(() => {
         if (!user) {
             setIsLoading(false);
@@ -41,13 +44,13 @@ export const Layout: React.FC = () => {
         const fetchChatSessions = async () => {
             try {
                 setIsLoading(true);
-                const sessionsCollectionRef = collection(db, 'users', user.uid, 'chatSessions');
+                // Usa una colección específica para este bot
+                const sessionsCollectionRef = collection(db, 'users', user.uid, `chatSessions_${botConfig.id}`);
                 const q = query(sessionsCollectionRef, orderBy('timestamp', 'desc'));
                 const querySnapshot = await getDocs(q);
                 
                 const sessions: ChatSession[] = querySnapshot.docs.map(doc => {
                     const data = doc.data();
-                    // Maneja tanto Timestamps de Firestore como fechas normales
                     const loadedMessages = (data.messages || []).map((msg: any) => ({
                         ...msg,
                         timestamp: msg.timestamp instanceof Timestamp 
@@ -67,16 +70,16 @@ export const Layout: React.FC = () => {
                 });
                 
                 setChatSessions(sessions);
-                console.log(`Cargadas ${sessions.length} sesiones de chat`);
+                console.log(`[${botConfig.name}] Cargadas ${sessions.length} sesiones de chat`);
             } catch (error) {
-                console.error('Error al cargar las sesiones:', error);
+                console.error(`[${botConfig.name}] Error al cargar las sesiones:`, error);
             } finally {
                 setIsLoading(false);
             }
         };
         
         fetchChatSessions();
-    }, [user]);
+    }, [user, botConfig.id, botConfig.name]);
 
     // Función mejorada para guardar la sesión en Firestore
     const saveSessionToFirestore = async (session: ChatSession) => {
@@ -86,13 +89,13 @@ export const Layout: React.FC = () => {
         }
         
         try {
-            const sessionDocRef = doc(db, 'users', user.uid, 'chatSessions', session.id);
+            // Usa una colección específica para este bot
+            const sessionDocRef = doc(db, 'users', user.uid, `chatSessions_${botConfig.id}`, session.id);
             
-            // Preparar los datos para Firestore
             const sessionData = {
                 title: session.title,
                 lastMessage: session.lastMessage,
-                timestamp: serverTimestamp(), // Usa serverTimestamp para mejor sincronización
+                timestamp: serverTimestamp(),
                 messages: session.messages.map(msg => ({
                     id: msg.id,
                     content: msg.content,
@@ -102,9 +105,9 @@ export const Layout: React.FC = () => {
             };
             
             await setDoc(sessionDocRef, sessionData);
-            console.log(`Sesión ${session.id} guardada exitosamente`);
+            console.log(`[${botConfig.name}] Sesión ${session.id} guardada exitosamente`);
         } catch (error) {
-            console.error('Error al guardar la sesión:', error);
+            console.error(`[${botConfig.name}] Error al guardar la sesión:`, error);
         }
     };
 
@@ -115,7 +118,6 @@ export const Layout: React.FC = () => {
             return;
         }
 
-        // Actualiza el estado local inmediatamente
         setChatSessions(prevSessions => {
             const sessionIndex = prevSessions.findIndex(s => s.id === chatId);
             
@@ -134,20 +136,17 @@ export const Layout: React.FC = () => {
                     : prevSessions[sessionIndex].title,
             };
             
-            // Guarda en Firestore de forma asíncrona
             saveSessionToFirestore(updatedSession);
             
-            // Actualiza el array de sesiones con la sesión modificada
             const updatedSessions = [...prevSessions];
             updatedSessions[sessionIndex] = updatedSession;
             
-            // Reordena para poner la sesión actualizada al principio
             return [
                 updatedSessions[sessionIndex],
                 ...updatedSessions.filter((_, i) => i !== sessionIndex)
             ];
         });
-    }, [user]);
+    }, [user, botConfig]);
 
     // Función para crear una nueva sesión de chat
     const createNewChatSession = useCallback(async () => {
@@ -162,14 +161,11 @@ export const Layout: React.FC = () => {
             messages: []
         };
         
-        // Añade la nueva sesión al estado local
         setChatSessions(prev => [newSession, ...prev]);
-        
-        // Guarda la nueva sesión en Firestore
         await saveSessionToFirestore(newSession);
         
         return newId;
-    }, [user]);
+    }, [user, botConfig]);
 
     // Función principal para manejar el envío de un mensaje
     const handleSendMessage = async (content: string) => {
@@ -180,7 +176,6 @@ export const Layout: React.FC = () => {
         
         let currentChatId = activeChatId;
 
-        // Si no hay chat activo, crea uno nuevo
         if (!currentChatId) {
             currentChatId = await createNewChatSession();
             if (!currentChatId) {
@@ -198,13 +193,12 @@ export const Layout: React.FC = () => {
             timestamp: new Date(),
         };
 
-        // Actualiza el estado de los mensajes con la pregunta del usuario
         const newMessagesWithUser = [...messages, userMessage];
         setMessages(newMessagesWithUser);
         setIsTyping(true);
 
         try {
-            const response = await fetch(N8N_WEBHOOK_URL, {
+            const response = await fetch(botConfig.webhookUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -213,7 +207,7 @@ export const Layout: React.FC = () => {
                         role: msg.role, 
                         content: msg.content 
                     })),
-                    botId: 'onboarding',
+                    botId: botConfig.id,
                 }),
             });
 
@@ -232,17 +226,13 @@ export const Layout: React.FC = () => {
                 timestamp: new Date(),
             };
             
-            // Actualiza el estado con la respuesta del bot
             const finalMessages = [...newMessagesWithUser, botMessage];
             setMessages(finalMessages);
-            
-            // Guarda la conversación completa
             await updateAndSaveSession(finalMessages, currentChatId);
 
         } catch (error) {
-            console.error("Error en el webhook:", error);
+            console.error(`[${botConfig.name}] Error en el webhook:`, error);
             
-            // Añade un mensaje de error al chat
             const errorMessage: Message = {
                 id: `msg-${Date.now()}-error`,
                 content: "Lo siento, ha ocurrido un error al procesar tu mensaje. Por favor, intenta de nuevo.",
@@ -258,7 +248,6 @@ export const Layout: React.FC = () => {
         }
     };
 
-    // Carga los mensajes de una sesión existente
     const loadChat = useCallback((sessionId: string) => {
         if (sessionId === activeChatId) return;
         
@@ -266,18 +255,17 @@ export const Layout: React.FC = () => {
         if (session) {
             setActiveChatId(sessionId);
             setMessages(session.messages || []);
-            console.log(`Cargando chat ${sessionId} con ${session.messages?.length || 0} mensajes`);
+            console.log(`[${botConfig.name}] Cargando chat ${sessionId} con ${session.messages?.length || 0} mensajes`);
         } else {
             console.error(`Sesión ${sessionId} no encontrada`);
         }
-    }, [chatSessions, activeChatId]);
+    }, [chatSessions, activeChatId, botConfig.name]);
     
-    // Limpia la pantalla para una nueva conversación
     const startNewChat = useCallback(() => {
         setActiveChatId(null);
         setMessages([]);
-        console.log('Iniciando nuevo chat');
-    }, []);
+        console.log(`[${botConfig.name}] Iniciando nuevo chat`);
+    }, [botConfig.name]);
 
     const handleLogout = async () => {
         try {
@@ -288,14 +276,13 @@ export const Layout: React.FC = () => {
         }
     };
 
-    // Muestra un indicador de carga mientras se cargan las sesiones
     if (isLoading && user) {
         return (
             <div className={`h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
                     <p className={`mt-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                        Cargando conversaciones...
+                        Cargando conversaciones de {botConfig.name}...
                     </p>
                 </div>
             </div>
@@ -327,16 +314,17 @@ export const Layout: React.FC = () => {
                 />
                 
                 <main className="flex-1 overflow-hidden">
-                    <ChatArea 
+                    <ChatAreaGeneric 
                         messages={messages} 
                         onSendMessage={handleSendMessage}
                         isTyping={isTyping}
                         hasMessages={messages.length > 0 || activeChatId !== null}
+                        botConfig={botConfig}
+                        cards={botConfig.cards}
                     />
                 </main>
             </div>
             
-            {/* Overlay para cerrar sidebar en móvil */}
             {!sidebarCollapsed && (
                 <div 
                     className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" 
