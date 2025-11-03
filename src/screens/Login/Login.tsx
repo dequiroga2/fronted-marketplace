@@ -35,7 +35,7 @@ export const Login = (): JSX.Element => {
       // Intenta iniciar sesión con el email y la contraseña proporcionados
       await signInWithEmailAndPassword(auth, email, password);
       // Si tiene éxito, Firebase maneja la sesión y redirigimos al usuario
-      navigate("/chatbotonboarding");
+      navigate("/marketplace");
     } catch (err: any) {
       // Si Firebase devuelve un error, lo mostramos al usuario
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
