@@ -15,7 +15,7 @@ import {
   ChevronDown,
   } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth, BotPermissions } from "../../contexts/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase-config";
 export const Marketplace = (): JSX.Element => {
@@ -23,8 +23,14 @@ export const Marketplace = (): JSX.Element => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, botPermissions } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login", { replace: true });
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -46,9 +52,23 @@ export const Marketplace = (): JSX.Element => {
     };
   }, [isUserMenuOpen]);
 
-  const chats = [
+  type ChatConfig = {
+    id: keyof BotPermissions; // "onboarding" | "fase1" | "fase2" | "fase3"
+    name: string;
+    description: string;
+    price: string;
+    period: string;
+    rating: number;
+    users: string;
+    category: string;
+    featured: boolean;
+    gradient: string;
+    route: string;
+  };
+
+  const chats: ChatConfig[] = [
     {
-      id: 1,
+      id: "onboarding",
       name: "Expansión Onboarding",
       description:
         "Assistant especializado en creatividad y escritura. Perfecto para generar contenido único y resolver problemas complejos con un enfoque innovador.",
@@ -62,7 +82,7 @@ export const Marketplace = (): JSX.Element => {
       route: "/chatbotonboarding",
     },
     {
-      id: 2,
+      id: "fase1",
       name: "Fase 1",
       description:
         "Chatbot especializado en la primera fase de desarrollo. Ideal para iniciar proyectos y establecer bases sólidas con estrategias efectivas.",
@@ -76,7 +96,7 @@ export const Marketplace = (): JSX.Element => {
       route: "/fase1",
     },
     {
-      id: 3,
+      id: "fase2",
       name: "Fase 2",
       description:
         "Assistant avanzado para la segunda fase de implementación. Optimiza procesos y mejora la eficiencia de tus proyectos en curso.",
@@ -90,7 +110,7 @@ export const Marketplace = (): JSX.Element => {
       route: "/fase2",
     },
     {
-      id: 4,
+      id: "fase3",
       name: "Fase 3",
       description:
         "Chatbot experto en la fase final de consolidación. Perfecto para escalar y maximizar resultados con análisis profundos y estrategias avanzadas.",
@@ -104,6 +124,10 @@ export const Marketplace = (): JSX.Element => {
       route: "/fase3",
     },
   ];
+
+  const visibleChats = botPermissions
+    ? chats.filter((chat) => !!botPermissions[chat.id])
+    : [];
 
   const handleExplore = () => {
     document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" });
@@ -310,7 +334,12 @@ export const Marketplace = (): JSX.Element => {
             </p>
            </div>
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {chats.map((chat, index) => (
+            {visibleChats.length === 0 && (
+              <p className="text-gray-400 text-center col-span-full">
+                No tienes ningún chatbot activo actualmente. Si crees que es un error, contacta al equipo de Henko.
+              </p>
+            )}
+            {visibleChats.map((chat, index) => (
               <div
                 key={chat.id}
                 className={`group relative bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-3xl p-6 hover:border-blue-500/50 transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/20 animate-fade-in-up`}

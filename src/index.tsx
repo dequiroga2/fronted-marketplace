@@ -12,22 +12,57 @@ import { ChatbotFase1 } from "./screens/ChatbotFase1/ChatbotFase1";
 import { ChatbotFase2 } from "./screens/ChatbotFase2/ChatbotFase2";
 import { ChatbotFase3 } from "./screens/ChatbotFase3/ChatbotFase3";
 import { AuthProvider } from "./contexts/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { ProtectedBotRoute } from "./components/ProtectedRoute";
 
 const App = () => (
   <Routes>
-    <Route path="/" element={<Navigate to="/marketplace" replace />} />
+    {/* raíz → login; el login ya redirige al marketplace si el user está logueado */}
+    <Route path="/" element={<Navigate to="/login" replace />} />
+
     <Route path="/login" element={<Login />} />
-    <Route element={<ProtectedRoute />}>
-      <Route path="/marketplace" element={<Marketplace />} />
-      <Route path="/chatbot" element={<Chatbot />} />
-      <Route path="/chatbotpost" element={<Chatbot_post />} />
-      <Route path="/chatbotvideo" element={<Chatbot_video />} />
-      <Route path="/chatbotonboarding" element={<ChatbotLayout />} />
-      <Route path="/fase1" element={<ChatbotFase1 />} />
-      <Route path="/fase2" element={<ChatbotFase2 />} />
-      <Route path="/fase3" element={<ChatbotFase3 />} />
-    </Route>
+    <Route path="/marketplace" element={<Marketplace />} />
+
+    <Route
+      path="/chatbotonboarding"
+      element={
+        <ProtectedBotRoute botId="onboarding">
+          {/* aquí uso ChatbotLayout, que sí tienes importado */}
+          <ChatbotLayout />
+        </ProtectedBotRoute>
+      }
+    />
+
+    <Route
+      path="/fase1"
+      element={
+        <ProtectedBotRoute botId="fase1">
+          <ChatbotFase1 />
+        </ProtectedBotRoute>
+      }
+    />
+
+    <Route
+      path="/fase2"
+      element={
+        <ProtectedBotRoute botId="fase2">
+          <ChatbotFase2 />
+        </ProtectedBotRoute>
+      }
+    />
+
+    <Route
+      path="/fase3"
+      element={
+        <ProtectedBotRoute botId="fase3">
+          <ChatbotFase3 />
+        </ProtectedBotRoute>
+      }
+    />
+
+    {/* Rutas “sueltas” que ya tenías */}
+    <Route path="/chatbot" element={<Chatbot />} />
+    <Route path="/chatbotpost" element={<Chatbot_post />} />
+    <Route path="/chatbotvideo" element={<Chatbot_video />} />
   </Routes>
 );
 
