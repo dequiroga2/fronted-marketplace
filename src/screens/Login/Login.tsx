@@ -6,7 +6,7 @@ import { Card, CardContent } from "../../components/ui/card";
 import { Checkbox } from "../../components/ui/checkbox";
 import { Input } from "../../components/ui/input";
 import { auth } from "../../firebase-config";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { useAuth } from "../../contexts/AuthContext";
 
 export const Login = (): JSX.Element => {
@@ -16,6 +16,10 @@ export const Login = (): JSX.Element => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetMessage, setResetMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
   const { user, isLoading: isAuthLoading } = useAuth();
 
   useEffect(() => {
@@ -52,6 +56,40 @@ export const Login = (): JSX.Element => {
   
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetEmail) {
+      setResetMessage({ type: 'error', text: 'Por favor, ingresa tu correo electrónico.' });
+      return;
+    }
+
+    setIsResetting(true);
+    setResetMessage(null);
+
+    try {
+      await sendPasswordResetEmail(auth, resetEmail);
+      setResetMessage({ 
+        type: 'success', 
+        text: 'Se ha enviado un correo de restablecimiento. Por favor, revisa tu bandeja de entrada.' 
+      });
+      setTimeout(() => {
+        setShowResetModal(false);
+        setResetEmail("");
+        setResetMessage(null);
+      }, 3000);
+    } catch (err: any) {
+      if (err.code === 'auth/user-not-found') {
+        setResetMessage({ type: 'error', text: 'No existe una cuenta con este correo electrónico.' });
+      } else if (err.code === 'auth/invalid-email') {
+        setResetMessage({ type: 'error', text: 'El correo electrónico no es válido.' });
+      } else {
+        setResetMessage({ type: 'error', text: 'Ocurrió un error. Por favor, inténtalo de nuevo.' });
+      }
+      console.error("Error al restablecer contraseña:", err.code);
+    } finally {
+      setIsResetting(false);
+    }
   };
 
 
@@ -160,7 +198,9 @@ export const Login = (): JSX.Element => {
                     Remember me
                   </label>
                 </div>
-                <span className="font-['Poppins'] font-light text-[#4c4c4c] cursor-pointer hover:text-[#0c21c1] transition-colors">
+                <span 
+                  onClick={() => setShowResetModal(true)}
+                  className="font-['Poppins'] font-light text-[#4c4c4c] cursor-pointer hover:text-[#0c21c1] transition-colors">
                   Forgot Password ?
                 </span>
               </div>
@@ -239,6 +279,73 @@ export const Login = (): JSX.Element => {
           </Card>
         </div>
       </div>
+
+      {/* Modal de restablecimiento de contraseña */}
+      {showResetModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 lg:p-8 max-w-md w-full shadow-xl">
+            <h2 className="font-['Poppins'] font-semibold text-[#000741] text-xl lg:text-2xl mb-4">
+              Restablecer Contraseña
+            </h2>
+            <p className="font-['Poppins'] text-[#4c4c4c] text-sm mb-6">
+              Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
+            </p>
+            
+            <div className="relative mb-6">
+              <label className="font-['Poppins'] font-medium text-[#999999] text-xs lg:text-[13px]">
+                Email
+              </label>
+              <div className="relative mt-4">
+                <MailIcon className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 lg:w-[17px] lg:h-[17px] text-[#000741]" />
+                <Input
+                  className="border-none pl-6 lg:pl-[27px] font-['Poppins'] text-[#000741] text-sm lg:text-base focus-visible:ring-0 h-8 px-0 bg-transparent"
+                  placeholder="Enter your email address"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  type="email"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleResetPassword();
+                    }
+                  }}
+                />
+                <div className="w-full h-0.5 bg-[#000741] mt-1" />
+              </div>
+            </div>
+
+            {resetMessage && (
+              <div className={`mb-4 p-3 rounded ${
+                resetMessage.type === 'success' 
+                  ? 'bg-green-100 text-green-700' 
+                  : 'bg-red-100 text-red-700'
+              } font-['Poppins'] text-sm`}>
+                {resetMessage.text}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  setShowResetModal(false);
+                  setResetEmail("");
+                  setResetMessage(null);
+                }}
+                disabled={isResetting}
+                className="flex-1 h-12 bg-gray-200 hover:bg-gray-300 text-[#000741] rounded-[32px] font-['Poppins'] font-medium text-sm lg:text-base disabled:bg-gray-100"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleResetPassword}
+                disabled={isResetting}
+                className="flex-1 h-12 bg-[#0c21c1] hover:bg-[#0a1da8] rounded-[32px] font-['Poppins'] font-medium text-sm lg:text-base shadow-[0px_4px_26px_#00000040] transition-colors disabled:bg-gray-400"
+              >
+                {isResetting ? "Enviando..." : "Enviar"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
